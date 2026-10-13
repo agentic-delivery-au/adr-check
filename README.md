@@ -33,7 +33,8 @@ These checks need only the files in front of you. They run in both modes.
   `0007` has `status: superseded` and `superseded_by: 9`. An ADR with `superseded_by` must have
   `status: superseded`, and a `superseded` ADR must name its successor. A link to a missing ADR, to
   the ADR itself, or to a rejected successor fails.
-- **Duplicate numbers.** Two files may not share a number.
+- **Duplicate numbers.** Two files may not share a number. A `supersedes` or `superseded_by` that
+  names a number two ADRs share also fails, because it is ambiguous.
 
 ### Against the base branch
 
@@ -52,6 +53,10 @@ are a record of what the team knew at the time, so they stay put.
   `superseded_by` to the new number.
 - **No reused numbers.** A new ADR may not take a number the base branch already uses, including one
   the base took after you branched.
+- **Symlinks on main need an override.** A symlinked ADR already on the base branch cannot be
+  repaired through this check. Replacing it with a regular file reports a type change, and deleting
+  it reports a deletion. Neither is allowed, and `adr-correction` lifts neither, so a person must
+  override the required check for that pull request.
 - **No `proposed` on the main branch.** With `--merging-to-main`, any ADR with `status: proposed`
   fails. `proposed` exists only on a branch.
 
@@ -175,7 +180,7 @@ adr-check [--mode {local,ci}] [--adr-dir DIR] [--base-ref REF] [--labels LABELS]
 The command prints one line per problem to stderr. It exits 0 when every rule holds, 1 when a rule
 is broken and 2 when the base ref is missing or the directory is not in a git repository.
 
-In `ci` mode, the duplicate-number check compares with the tip of the base ref. The other history
+In `ci` mode, the no-reused-numbers check compares with the tip of the base ref. The other history
 checks compare with the merge base of the base ref and `HEAD`. Git finds renames with
 `git diff --name-status -M`, which detects a rename only when the file is mostly unchanged. A
 renumbering repair always is.

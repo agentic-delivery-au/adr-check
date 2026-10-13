@@ -26,8 +26,7 @@ inputs:
 runs:
   using: composite
   steps:
-    # The runner has already fetched this repo's files into github.action_path, so the package
-    # runs from there, at the same ref as the `uses:` line.
+    # The package runs from github.action_path, at the same ref as the `uses:` line.
     - uses: astral-sh/setup-uv@v10.2.0
     - name: Run adr-check
       shell: bash
@@ -46,8 +45,7 @@ runs:
           args+=(--merging-to-main)
         fi
         if [[ "$EVENT_NAME" == "push" ]]; then
-          # The PR run enforced the history rules, and PRs are the only way onto main. A push
-          # has no PR labels, so comparing here would fail every merged adr-correction.
+          # A push has no PR labels, so comparing here would fail every merged adr-correction.
           echo "::notice::A push runs only the checks on the files."
         elif [[ -z "$BASE_REF" ]]; then
           echo "::error::base-ref is empty. Run this action on pull_request or push, or set base-ref."

@@ -23,7 +23,7 @@ jobs:
       # merge. No owner or repositories input, so the token covers this
       # repository only; the permission-* set is release-please's documented
       # minimum, and without it the token inherits every permission the
-      # installation holds. README "Release bot" covers the App setup.
+      # installation holds. README "Repository settings" covers the App setup.
       - uses: actions/create-github-app-token@v3
         id: app-token
         with:
@@ -40,9 +40,7 @@ jobs:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
-  # PyPI trusted publishing: the pending publisher is registered against this
-  # workflow file name and the `pypi` environment, so renaming either breaks it.
-  # No secret is involved; the OIDC token is the credential.
+  # PyPI trusted publishing is registered against this file name and the `pypi` environment.
   publish:
     needs: release-please
     if: needs.release-please.outputs.release_created == 'true'
