@@ -1,6 +1,6 @@
 [project]
 name = "adr-check"
-version = "0.1.0"
+version = "0.1.1"
 description = "Checks architecture decision records (ADRs) in docs/adr"
 readme = "README.md"
 license = "MIT"
