@@ -213,7 +213,7 @@ def _modified_problems(
     repo: Path, merge_base: str, path: str, labels: Collection[str], renumbered: dict[int, int]
 ) -> list[str]:
     old, new = _show(repo, merge_base, path), _read(repo, path)
-    if old.meta is not None and old.meta.status == "proposed":
+    if old.raw is not None and old.raw.get("status") == "proposed":
         return []
     if old.raw is None:
         return [f"{path}: the version on main has unreadable frontmatter, so it cannot be compared"]

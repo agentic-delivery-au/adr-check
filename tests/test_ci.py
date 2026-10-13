@@ -449,3 +449,14 @@ def test_repo_root_finds_the_top(repo: Repo, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.chdir(repo.adr_dir)
 
     assert repo_root().resolve() == repo.path.resolve()
+
+
+def test_proposed_adr_on_main_with_invalid_frontmatter_may_still_be_settled(tmp_path: Path):
+    r = Repo(tmp_path)
+    r.write(OLD, adr(1, status="proposed").replace("date: 2026-03-12", "date: 12/03/2026"))
+    r.commit("base")
+    r.branch()
+    r.write(OLD, adr(1, status="accepted"))
+    r.commit()
+
+    assert r.check() == []
