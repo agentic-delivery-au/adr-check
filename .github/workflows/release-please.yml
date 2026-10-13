@@ -71,6 +71,10 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions: {}
+    # One at a time, so each run's ancestor check sees the previous run's move.
+    concurrency:
+      group: floating-tags
+      cancel-in-progress: false
     steps:
       - uses: actions/create-github-app-token@v3
         id: app-token
