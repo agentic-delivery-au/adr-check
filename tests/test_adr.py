@@ -242,6 +242,34 @@ def test_load_tree_reports_non_utf8(tmp_path: Path):
     assert problems == [f"docs/adr/{name(1)}: file is not valid UTF-8"]
 
 
+def test_load_tree_rejects_a_symlinked_adr(tmp_path: Path):
+    target = tmp_path / "elsewhere.md"
+    target.write_text(adr(1))
+    adr_dir = tmp_path / "docs" / "adr"
+    adr_dir.mkdir(parents=True)
+    (adr_dir / name(1)).symlink_to(target)
+
+    files, problems = load_tree(adr_dir, "docs/adr")
+
+    assert files == []
+    assert problems == [f"docs/adr/{name(1)}: is a symlink. An ADR must be a regular file"]
+
+
+def test_load_tree_rejects_a_dangling_symlinked_adr(tmp_path: Path):
+    (tmp_path / name(1)).symlink_to(tmp_path / "missing.md")
+
+    _, problems = load_tree(tmp_path, "docs/adr")
+
+    assert problems == [f"docs/adr/{name(1)}: is a symlink. An ADR must be a regular file"]
+
+
+def test_load_tree_ignores_a_symlink_that_is_not_a_candidate(tmp_path: Path):
+    (tmp_path / "README.md").write_text("# ADRs\n")
+    (tmp_path / "diagram.png").symlink_to(tmp_path / "README.md")
+
+    assert load_tree(tmp_path, "docs/adr") == ([], [])
+
+
 def test_load_tree_of_a_missing_directory_is_empty(tmp_path: Path):
     assert load_tree(tmp_path / "nope", "docs/adr") == ([], [])
 

@@ -178,6 +178,8 @@ def check_against_base(
     for letter, old_path, new_path in changes:
         if letter != "R":
             continue
+        if (repo / new_path).is_symlink():
+            continue  # load_tree reports it, and reading it would follow the link
         old, new = _show(repo, merge_base, old_path), _read(repo, new_path)
         found = _renumber_problems(old, new, mb_numbers)
         problems.extend(found)
@@ -195,7 +197,7 @@ def check_against_base(
                     f"{new_path}: number {number:04d} is already used on {base_ref} by "
                     f"{', '.join(tip_numbers[number])}. Renumber this ADR"
                 )
-        elif letter == "M":
+        elif letter == "M" and not (repo / new_path).is_symlink():
             problems.extend(_modified_problems(repo, merge_base, new_path, labels, renumbered))
         if letter not in "ADRM":
             problems.append(f"{new_path}: unexpected change type {letter!r}")

@@ -194,6 +194,41 @@ def test_symlink_replacing_an_adr_fails(repo: Repo):
     assert any("unexpected change type 'T'" in p for p in repo.check())
 
 
+def test_a_symlinked_adr_added_on_the_branch_is_reported_once(repo: Repo):
+    os.symlink(OLD, repo.adr_dir / NEW)
+    repo.commit()
+
+    problems = repo.check_all()
+
+    assert problems == [f"docs/adr/{NEW}: is a symlink. An ADR must be a regular file"]
+
+
+def test_a_dangling_symlink_on_main_edited_on_the_branch_does_not_crash(tmp_path: Path):
+    r = Repo(tmp_path)
+    os.symlink("gone-1.md", r.adr_dir / OLD)
+    r.commit("base")
+    r.branch()
+    (r.adr_dir / OLD).unlink()
+    os.symlink("gone-2.md", r.adr_dir / OLD)
+    r.commit()
+
+    assert r.check_all() == [f"docs/adr/{OLD}: is a symlink. An ADR must be a regular file"]
+
+
+def test_a_symlinked_adr_renamed_on_the_branch_does_not_crash(tmp_path: Path):
+    r = Repo(tmp_path)
+    r.write(name(3, "first"), adr(3, title="First"))
+    os.symlink("gone.md", r.adr_dir / name(3, "second"))
+    r.commit("base")
+    r.branch()
+    r.rename(name(3, "second"), name(5, "second"))
+    r.commit()
+
+    problems = r.check_all()
+
+    assert f"docs/adr/{name(5, 'second')}: is a symlink. An ADR must be a regular file" in problems
+
+
 @pytest.fixture
 def duplicated(tmp_path: Path) -> Repo:
     """Main holds two ADRs numbered 0003, and 0004 supersedes the second of them."""

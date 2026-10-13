@@ -219,9 +219,12 @@ def load_tree(adr_dir: Path, display_dir: str) -> tuple[list[AdrFile], list[str]
     if not adr_dir.is_dir():
         return files, problems
     for entry in sorted(adr_dir.iterdir()):
+        path = f"{display_dir}/{entry.name}"
+        if entry.is_symlink() and is_candidate(entry.name):
+            problems.append(f"{path}: is a symlink. An ADR must be a regular file")
+            continue
         if not entry.is_file() or not is_candidate(entry.name):
             continue
-        path = f"{display_dir}/{entry.name}"
         try:
             text = entry.read_text(encoding="utf-8")
         except UnicodeDecodeError:
