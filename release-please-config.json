@@ -3,11 +3,12 @@
   "packages": {
     ".": {
       "release-type": "python",
+      "include-component-in-tag": false,
       "extra-files": [
         {
           "path": "/uv.lock",
           "type": "toml",
-          "jsonpath": "$.package[?(@.name.value=='hello-world')].version"
+          "jsonpath": "$.package[?(@.name.value=='adr-check')].version"
         }
       ]
     }

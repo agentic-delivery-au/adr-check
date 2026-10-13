@@ -1,12 +1,25 @@
 [project]
-name = "hello-world"
-version = "0.2.0"
-description = "Example application: greets someone from the command line"
+name = "adr-check"
+version = "0.0.0"
+description = "Checks architecture decision records (ADRs) in docs/adr"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Stuart Langley" }]
+keywords = ["adr", "architecture-decision-records", "pre-commit", "markdown"]
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+  "pyyaml==6.0.3",
+]
 
 [project.scripts]
-hello-world = "hello_world.cli:main"
+adr-check = "adr_check.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/agentic-delivery-au/adr-check"
+Repository = "https://github.com/agentic-delivery-au/adr-check"
+Issues = "https://github.com/agentic-delivery-au/adr-check/issues"
+Changelog = "https://github.com/agentic-delivery-au/adr-check/blob/main/CHANGELOG.md"
 
 [build-system]
 requires = ["hatchling"]
@@ -20,6 +33,7 @@ dev = [
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
   "ruff==0.16.7",
+  "types-pyyaml==6.0.12.20260408",
 ]
 
 [tool.ruff]
@@ -62,7 +76,7 @@ convention = "google"
 [tool.ruff.lint.isort]
 # The package is installed into .venv, so without this Ruff sorts it with the
 # third-party imports.
-known-first-party = ["hello_world"]
+known-first-party = ["adr_check"]
 
 [tool.ruff.format]
 quote-style = "double"
@@ -101,7 +115,7 @@ branch = true
 
 [tool.coverage.report]
 # Coverage's walk descends only through directories holding an __init__.py, so a
-# namespace subpackage under src/hello_world/ would vanish from the report
+# namespace subpackage under src/adr_check/ would vanish from the report
 # rather than sit at 0% -- and a wholly untested one leaves the total reading
 # 100%, with nothing to notice. Verified by planting a module in a directory
 # with no __init__.py: absent without this, reported at 0% with it.

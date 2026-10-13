@@ -35,8 +35,7 @@ deliberate part, and a repo created from this template starts on them. Selecting
 is fine; removing a selected rule to make existing code pass is not. Suppress a specific line with a
 named code and a reason (`# noqa: ANN001  # signature fixed by the SDK`), never a blanket `# noqa`.
 
-One package, at `src/hello_world/`, with `tests/` alongside it. The example is there to be replaced:
-rename the package, rename it in `known-first-party` and `[project]`, and write your own. Commands:
+One package, at `src/adr_check/`, with `tests/` alongside it. Commands:
 
 ```bash
 uv sync                    # after cloning, and after changing dependencies
