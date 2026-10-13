@@ -147,11 +147,12 @@ Pin the action to a release tag, `@vX.Y.Z`. Move it together with the hook's ver
   checks on the files and the `proposed` check.
 
 To take compatible releases without bumping by hand, use a floating tag instead. `@v0` follows the
-latest `v0.*.*` release and `@v0.1` the latest `v0.1.*`. The release workflow moves both on each
-release, and only the release App can create or move them. An exact tag such as `@v0.1.1` never
-moves. Under the current release-please config a breaking change bumps to 1.0.0, so `v0` moves only
-on `feat` and `fix` releases. With `@v0`, give the pre-commit hook a matching range so local and CI
-run the same rules:
+latest `v0.*.*` release and `@v0.1` the latest `v0.1.*`. The release workflow moves both once a
+release has published to PyPI. A release whose publish fails leaves them on the previous release.
+Only the release App can create or move them. An exact tag such as `@v0.1.1` never moves. Under the
+current release-please config a breaking change bumps to 1.0.0, so `v0` moves only on `feat` and
+`fix` releases. With `@v0`, give the pre-commit hook a matching range so local and CI run the same
+rules:
 
 ```yaml
 repos:
