@@ -148,8 +148,8 @@ Pin the action to a release tag, `@vX.Y.Z`. Move it together with the hook's ver
 
 The action installs the tool from its own checkout (the files the runner fetched for `uses:`), so
 the code that runs is whatever commit the tag points at. A tag is a mutable reference: a PyPI
-version cannot change, but someone with write access here can move a tag. The action uses
-[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) to provide uv.
+version cannot change, but someone with write access to the GitHub repository can move a tag. The
+action uses [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) to provide uv.
 
 #### Action inputs
 
