@@ -101,7 +101,7 @@ def test_ci_mode_exits_one_naming_a_modified_adr_that_is_not_utf8(
     code, err = run(capsys, "--mode", "ci", "--base-ref", "main")
 
     assert code == 1
-    assert f"docs/adr/{name(1)}: file is not valid UTF-8" in err
+    assert err.count(f"docs/adr/{name(1)}: file is not valid UTF-8") == 1
 
 
 def test_ci_mode_defaults_the_base_ref_to_origin_main(

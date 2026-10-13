@@ -491,22 +491,50 @@ def test_an_adr_changed_in_a_commit_and_deleted_in_the_working_tree_is_checked_f
     assert "the body of an ADR on main never changes" in problems[0]
 
 
-def test_a_modified_adr_that_is_not_utf8_is_reported_with_its_name(repo: Repo):
+def test_a_modified_adr_that_is_not_utf8_is_reported_once(repo: Repo):
     repo.write(OLD, adr(1))
     (repo.adr_dir / OLD).write_bytes(adr(1).replace("It is done.", "Café").encode("latin-1"))
     repo.commit()
 
-    problems = repo.check()
+    problems = repo.check_all()
 
-    assert problems == [f"docs/adr/{OLD}: file is not valid UTF-8"]
+    assert problems.count(f"docs/adr/{OLD}: file is not valid UTF-8") == 1
 
 
-def test_a_renumbered_adr_that_is_not_utf8_is_reported_with_its_name(duplicated: Repo):
+def test_a_renumbered_adr_that_is_not_utf8_is_reported_once(duplicated: Repo):
     repair(duplicated)
     text = duplicated.read(name(5, "second")).replace("It is done.", "Café")
     (duplicated.adr_dir / name(5, "second")).write_bytes(text.encode("latin-1"))
     duplicated.commit()
 
-    problems = duplicated.check()
+    problems = duplicated.check_all()
 
-    assert f"docs/adr/{name(5, 'second')}: file is not valid UTF-8" in problems
+    assert problems.count(f"docs/adr/{name(5, 'second')}: file is not valid UTF-8") == 1
+
+
+def test_a_proposed_adr_on_main_that_is_not_utf8_may_be_re_encoded_and_settled(repo: Repo):
+    text = adr(2, status="proposed").replace("It is done.", "Café")
+    repo.write(NEW, text)
+    (repo.adr_dir / NEW).write_bytes(text.encode("latin-1"))
+    repo.commit("base")
+    repo.git("branch", "-f", "main")
+    repo.branch("settle")
+    repo.write(NEW, adr(2).replace("It is done.", "Café"))
+    repo.commit()
+
+    assert repo.check() == []
+
+
+def test_an_accepted_adr_on_main_that_is_not_utf8_is_not_blamed_once_re_encoded(repo: Repo):
+    text = adr(1).replace("It is done.", "Café")
+    (repo.adr_dir / OLD).write_bytes(text.encode("latin-1"))
+    repo.commit("base")
+    repo.git("branch", "-f", "main")
+    repo.branch("re-encode")
+    repo.write(OLD, text)
+    repo.commit()
+
+    problems = repo.check()
+
+    assert not any("not valid UTF-8" in p for p in problems)
+    assert repo.check(labels=["adr-correction"]) == []

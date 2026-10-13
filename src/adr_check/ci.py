@@ -21,11 +21,12 @@ class BaseRefError(Exception):
     """The base ref cannot be used, so the history checks cannot run."""
 
 
-def _git(repo: Path, *args: str) -> str:
+def _git(repo: Path, *args: str, errors: str = "strict") -> str:
     result = subprocess.run(  # noqa: S603  # fixed git binary, arguments are not shell-parsed
         ["git", "-C", str(repo), *args],  # noqa: S607  # git is resolved from PATH on purpose
         capture_output=True,
         encoding="utf-8",
+        errors=errors,
         check=False,
     )
     if result.returncode != 0:
@@ -82,7 +83,8 @@ def _changes(repo: Path, base_ref: str, rel_dir: str) -> list[tuple[str, str, st
 
 
 def _show(repo: Path, rev: str, path: str) -> AdrFile:
-    adr, _ = parse_text(path, _git(repo, "show", f"{rev}:{path}"))
+    # load_tree reports a file that is not UTF-8, so compare a best-effort decoding here.
+    adr, _ = parse_text(path, _git(repo, "show", f"{rev}:{path}", errors="replace"))
     return adr
 
 
@@ -180,11 +182,7 @@ def check_against_base(
             continue
         if (repo / new_path).is_symlink():
             continue  # load_tree reports it, and reading it would follow the link
-        try:
-            old, new = _show(repo, merge_base, old_path), _read(repo, new_path)
-        except UnicodeDecodeError:
-            problems.append(f"{new_path}: file is not valid UTF-8")
-            continue
+        old, new = _show(repo, merge_base, old_path), _read(repo, new_path)
         found = _renumber_problems(old, new, mb_numbers)
         problems.extend(found)
         if not found and old.number is not None and new.number is not None:
@@ -202,10 +200,7 @@ def check_against_base(
                     f"{', '.join(tip_numbers[number])}. Renumber this ADR"
                 )
         elif letter == "M" and not (repo / new_path).is_symlink():
-            try:
-                problems.extend(_modified_problems(repo, merge_base, new_path, labels, renumbered))
-            except UnicodeDecodeError:
-                problems.append(f"{new_path}: file is not valid UTF-8")
+            problems.extend(_modified_problems(repo, merge_base, new_path, labels, renumbered))
         if letter not in "ADRM":
             problems.append(f"{new_path}: unexpected change type {letter!r}")
     return problems
