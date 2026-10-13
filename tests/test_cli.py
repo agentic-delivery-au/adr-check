@@ -87,6 +87,23 @@ def test_ci_mode_reads_labels_from_json(
     assert run(capsys, *base, "--labels", "[]")[0] == 1
 
 
+def test_ci_mode_exits_one_naming_a_modified_adr_that_is_not_utf8(
+    adr_dir: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
+):
+    repo = Repo(adr_dir.parent.parent)
+    (adr_dir / name(1)).write_text(adr(1))
+    repo.commit("base")
+    repo.branch()
+    (adr_dir / name(1)).write_bytes(adr(1).replace("It is done.", "Café").encode("latin-1"))
+    repo.commit()
+    monkeypatch.chdir(repo.path)
+
+    code, err = run(capsys, "--mode", "ci", "--base-ref", "main")
+
+    assert code == 1
+    assert f"docs/adr/{name(1)}: file is not valid UTF-8" in err
+
+
 def test_ci_mode_defaults_the_base_ref_to_origin_main(
     adr_dir: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ):
