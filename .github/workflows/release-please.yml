@@ -71,7 +71,8 @@ jobs:
     runs-on: ubuntu-latest
     environment: release
     permissions: {}
-    # One at a time, so each run's ancestor check sees the previous run's move.
+    # One at a time, so each run's ancestor check sees the last move. A pending run is
+    # cancelled when another joins: re-run it if it was the newest release.
     concurrency:
       group: floating-tags
       cancel-in-progress: false
