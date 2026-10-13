@@ -1,4 +1,5 @@
 import os
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -460,3 +461,18 @@ def test_proposed_adr_on_main_with_invalid_frontmatter_may_still_be_settled(tmp_
     r.commit()
 
     assert r.check() == []
+
+
+def test_git_output_is_decoded_as_utf8(repo: Repo, monkeypatch: pytest.MonkeyPatch):
+    seen: list[dict[str, object]] = []
+    real_run = subprocess.run
+
+    def spy(*args, **kwargs):
+        seen.append(kwargs)
+        return real_run(*args, **kwargs)
+
+    monkeypatch.setattr(subprocess, "run", spy)
+    repo.check()
+
+    assert seen
+    assert all(kwargs.get("encoding") == "utf-8" for kwargs in seen)

@@ -25,7 +25,7 @@ def _git(repo: Path, *args: str) -> str:
     result = subprocess.run(  # noqa: S603  # fixed git binary, arguments are not shell-parsed
         ["git", "-C", str(repo), *args],  # noqa: S607  # git is resolved from PATH on purpose
         capture_output=True,
-        text=True,
+        encoding="utf-8",
         check=False,
     )
     if result.returncode != 0:
