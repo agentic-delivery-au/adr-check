@@ -149,7 +149,7 @@ def _headings(body: str) -> list[tuple[int, str]]:
             in_comment = "-->" not in line
             continue
         if fence is None and _COMMENT_START.match(line):
-            in_comment = "-->" not in line[line.index("<!--") + 4 :]
+            in_comment = "-->" not in line[line.index("<!--") :]
             continue
         line = _COMMENT.sub("", line)
         match = _FENCE.match(line)

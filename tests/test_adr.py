@@ -208,6 +208,13 @@ def test_a_comment_opener_inside_a_fence_is_literal():
     assert parse(7, text)[1] == []
 
 
+@pytest.mark.parametrize("opener", ["<!-->", "<!--->"])
+def test_a_comment_that_closes_on_its_opening_line_hides_nothing(opener: str):
+    text = adr(7).replace("## Context\n", f"{opener}\n## Context\n")
+
+    assert parse(7, text)[1] == []
+
+
 def test_a_comment_closes_on_a_later_line_and_the_sections_after_it_count():
     text = adr(7).replace("## Context\n", "<!-- guidance\n## Not a section\n-->\n## Context\n")
 
