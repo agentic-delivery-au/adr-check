@@ -146,6 +146,25 @@ Pin the action to a release tag, `@vX.Y.Z`. Move it together with the hook's ver
   would fail every merged `adr-correction`. If a push does trigger the action, it runs only the
   checks on the files and the `proposed` check.
 
+To take compatible releases without bumping by hand, use a floating tag instead. `@v0` follows the
+latest `v0.*.*` release and `@v0.1` the latest `v0.1.*`. The release workflow moves both on each
+release, and only the release App can create or move them. An exact tag such as `@v0.1.1` never
+moves. Under the current release-please config a breaking change bumps to 1.0.0, so `v0` moves only
+on `feat` and `fix` releases. With `@v0`, give the pre-commit hook a matching range so local and CI
+run the same rules:
+
+```yaml
+repos:
+  - repo: local
+    hooks:
+      - id: adr-check
+        name: adr-check
+        entry: uvx --refresh-package adr-check 'adr-check<1'
+        language: system
+        files: ^docs/adr/
+        pass_filenames: false
+```
+
 The action installs the tool from its own checkout (the files the runner fetched for `uses:`), so
 the code that runs is the commit the tag points at. Rulesets in this repository stop anyone moving
 or deleting a release tag (`vX.Y.Z`), and stop anyone but the release App creating one.
@@ -232,14 +251,16 @@ python3 scripts/bootstrap_repo.py            # what it would change
 python3 scripts/bootstrap_repo.py --apply    # change it
 ```
 
-Two more rulesets protect release tags (`v*.*.*`). "protect release tags" blocks moving or deleting
-one, with no bypass. "release tags come from the release bot" blocks creating one, except by the
-release App. The App's key is a secret of the `release` environment, which deploys only from `main`,
-so only the release-please job on `main` can mint the token here. That holds only while no other
-secret holding the same key reaches a workflow: an organisation secret shared with this or another
-repository would let that workflow mint the token too. A repository admin can also change or disable
-either ruleset. Pin the action to a commit SHA if you need a guarantee that rests on neither. The
-script does not manage these rulesets. Floating tags such as `v0` stay movable.
+Three more rulesets protect release tags. "protect release tags" blocks moving or deleting an exact
+tag (`v*.*.*`), with no bypass. "release tags come from the release bot" blocks creating one, except
+by the release App. "floating release tags come from the release bot" covers the rest of `v*` (`v0`,
+`v0.1`) and blocks creating, moving or deleting them, except by the release App. The App's key is a
+secret of the `release` environment, which deploys only from `main`, so only the release-please job
+on `main` can mint the token here. That holds only while no other secret holding the same key
+reaches a workflow: an organisation secret shared with this or another repository would let that
+workflow mint the token too. A repository admin can also change or disable any of them. Pin the
+action to a commit SHA if you need a guarantee that rests on neither. The script does not manage
+these rulesets.
 
 `release-please.yml` authenticates as a GitHub App, because a pull request opened with
 `GITHUB_TOKEN` triggers no workflows and the required checks would never report on the release PR.
