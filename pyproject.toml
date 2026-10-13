@@ -1,0 +1,111 @@
+[project]
+name = "hello-world"
+version = "0.2.0"
+description = "Example application: greets someone from the command line"
+requires-python = ">=3.14"
+dependencies = []
+
+[project.scripts]
+hello-world = "hello_world.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[dependency-groups]
+# Pinned exactly so a tool cannot change a CI result on its own. Dependabot
+# raises the upgrade PRs through the "uv" entry in .github/dependabot.yml.
+dev = [
+  "pyrefly==1.3.0",
+  "pytest==9.1.1",
+  "pytest-cov==7.1.0",
+  "ruff==0.16.7",
+]
+
+[tool.ruff]
+line-length = 100
+# target-version is inferred from requires-python.
+# scripts/ is base-template's, not this repo's: it arrives with the template and
+# is linted and type-checked there, so checking it again here only invites a
+# local fix that then diverges from upstream. Pyrefly skips it the same way, by
+# being given src instead.
+# The glob is load-bearing: a bare "scripts" matches a path segment at any depth,
+# which would un-lint a scripts/ subpackage under src/ too.
+extend-exclude = ["scripts/**"]
+
+[tool.ruff.lint]
+select = [
+  "E", "W",  # pycodestyle
+  "F",       # pyflakes
+  "I",       # isort
+  "B",       # bugbear
+  "C4",      # comprehensions
+  "UP",      # pyupgrade
+  "N",       # pep8-naming
+  "D",       # pydocstyle
+  "ANN",     # annotations
+  "S",       # bandit (security)
+  "G",       # flake8-logging-format
+  "ARG",     # unused arguments
+  "RUF",     # ruff-specific
+]
+ignore = [
+  "D417",    # Args/Returns/Raises sections not required when the signature is self-explanatory
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["D100", "D101", "D102", "D103", "S101", "ANN"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.isort]
+# The package is installed into .venv, so without this Ruff sorts it with the
+# third-party imports.
+known-first-party = ["hello_world"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyrefly]
+python-version = "3.14"
+preset = "strict"
+# No project-excludes: the check is invoked as `pyrefly check src` (see
+# .pre-commit-config.yaml), which scopes it to this repo's own code. A bare
+# `pyrefly check` also reports on scripts/ and tests/ -- 39 errors here against
+# src's 0 -- and neither is meant to be checked: scripts/ is base-template's,
+# and tests/ is deliberately unannotated (see the ruff per-file-ignores above).
+# Naming the path is the Pyrefly equivalent of both exclusions. The preset and
+# python-version above still apply when a path is passed.
+
+# Leave empty and the preset decides. Add an entry only to record a deliberate
+# exception, and say why.
+[tool.pyrefly.errors]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# Coverage is on by default so `uv run pytest` and the CI job are the same run.
+# A bare --cov takes its source from [tool.coverage.run]; naming paths here
+# would override it and leave two lists to keep in step.
+addopts = [
+  "--strict-markers",
+  "--strict-config",
+  "--cov",
+  "--cov-report=term-missing",
+  "--cov-report=xml",
+]
+
+[tool.coverage.run]
+source = ["src"]
+branch = true
+
+[tool.coverage.report]
+# Coverage's walk descends only through directories holding an __init__.py, so a
+# namespace subpackage under src/hello_world/ would vanish from the report
+# rather than sit at 0% -- and a wholly untested one leaves the total reading
+# 100%, with nothing to notice. Verified by planting a module in a directory
+# with no __init__.py: absent without this, reported at 0% with it.
+include_namespace_packages = true
+
+[tool.coverage.xml]
+output = "coverage.xml"

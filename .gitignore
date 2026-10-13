@@ -1,0 +1,29 @@
+# OS / editor cruft
+.DS_Store
+*.swp
+
+# Local secrets
+.env
+
+# Local git worktrees
+.worktrees/
+
+# Claude Code agent worktrees and local state
+.claude/worktrees/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
+# Python build output
+dist/
+*.egg-info/
+
+# Python environment and tool caches
+.venv/
+.pytest_cache/
+.ruff_cache/
+
+# Coverage output, written by every `uv run pytest`
+.coverage
+coverage.xml

@@ -1,0 +1,11 @@
+# actionlint checks action inputs against a generated snapshot of popular
+# actions, and its entry for create-github-app-token@v3 still requires the
+# deprecated app-id and does not know the client-id that replaced it. Upstream's
+# action.yml at v3.2.0 marks app-id "Use 'client-id' instead". Scoped to the two
+# messages so everything else about this workflow is still checked; remove it
+# once the snapshot catches up.
+paths:
+  .github/workflows/release-please.yml:
+    ignore:
+      - 'missing input "app-id" which is required by action "actions/create-github-app-token@v3"'
+      - 'input "client-id" is not defined in action "actions/create-github-app-token@v3"'

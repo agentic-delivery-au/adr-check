@@ -1,0 +1,16 @@
+# These targets are reported as the codecov/* commit statuses, separately from
+# the tests.yml job, which passes whatever the number is. Neither status is a
+# required check, so today they inform a reviewer rather than block a merge --
+# a status has to report at least once before it can be required, and one that
+# never reports blocks every pull request instead.
+
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch:
+      default:
+        target: 80%
+        threshold: 0%

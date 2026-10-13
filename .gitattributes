@@ -1,0 +1,5 @@
+# eol=lf so a Windows checkout gets LF too, not just the index.
+* text=auto eol=lf
+
+# CRLF breaks a shebang, so keep this one explicit.
+*.sh text eol=lf

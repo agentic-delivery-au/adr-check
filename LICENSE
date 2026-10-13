@@ -1,0 +1,19 @@
+LICENSE NOT YET CHOSEN
+
+This is a placeholder carried in from the base template. It grants no rights to
+anyone. Replace it with a real license before this code is shared outside the
+organisation.
+
+The realistic choices:
+
+  MIT           Permissive and short, no patent grant.
+  Apache-2.0    Permissive with an explicit patent grant and NOTICE handling.
+  Proprietary   For a repo that stays private. Replace this file with
+                "Copyright (c) <year> <owner>. All rights reserved." and
+                nothing else.
+
+https://choosealicense.com compares them.
+
+Until this file is replaced, GitHub reports the repository as having no
+recognised license. That is the intended signal, not an oversight. Default
+copyright applies in the meantime: all rights reserved, whatever this file says.

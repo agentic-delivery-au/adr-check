@@ -1,0 +1,5 @@
+# mdformat configuration — https://mdformat.readthedocs.io
+# Read by the pre-commit hook, editor integrations, and manual `mdformat .` runs.
+
+wrap = 100          # wrap prose at 100 columns
+end_of_line = "lf"

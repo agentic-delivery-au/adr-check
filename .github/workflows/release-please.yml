@@ -1,0 +1,37 @@
+name: release-please
+
+# Maintains an open release PR off main: it accumulates the Conventional Commits
+# since the last release, and merging it tags the version and cuts the GitHub
+# release. Nothing here publishes an artifact; that is per-language.
+
+on:
+  push:
+    branches: [main]
+
+# The App token below does all the work, so GITHUB_TOKEN is left with nothing.
+permissions: {}
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      # A release PR opened with GITHUB_TOKEN triggers no workflows, so the
+      # checks the ruleset requires would never report on it and it could never
+      # merge. No owner or repositories input, so the token covers this
+      # repository only; the permission-* set is release-please's documented
+      # minimum, and without it the token inherits every permission the
+      # installation holds. README "Release bot" covers the App setup.
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        with:
+          client-id: ${{ vars.RELEASE_BOT_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          permission-contents: write
+          permission-issues: write
+          permission-pull-requests: write
+
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

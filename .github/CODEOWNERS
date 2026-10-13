@@ -1,0 +1,6 @@
+# Replace this handle in every repo created from this template: a team that
+# does not exist matches nobody, and GitHub reports no error when it happens.
+# This only requests a review. It withholds merge until one arrives where the
+# branch ruleset also turns on "Require review from Code Owners".
+
+* @agentic-delivery-au/engineering

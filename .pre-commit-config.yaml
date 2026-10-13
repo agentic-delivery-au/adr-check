@@ -1,0 +1,115 @@
+# See https://pre-commit.com for usage and hook docs.
+# Update pinned revs with: pre-commit autoupdate
+
+default_install_hook_types: [pre-commit, commit-msg]
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]  # keep 2-space hard line breaks in .md
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/hukkin/mdformat
+    rev: 1.0.0
+    hooks:
+      - id: mdformat
+        # release-please owns CHANGELOG.md and rewrites it in its own format on
+        # every release, so formatting it here just starts a tug of war.
+        # (^|/) rather than ^ so a monorepo releasing per package keeps its
+        # apps/*/CHANGELOG.md and libs/*/CHANGELOG.md excluded too.
+        exclude: (^|/)CHANGELOG\.md$
+        additional_dependencies:
+          - mdformat-gfm
+          - mdformat-footnote
+          - mdformat-frontmatter  # leave YAML front matter (skill SKILL.md, etc.) untouched
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.49.1
+    hooks:
+      - id: markdownlint
+        exclude: (^|/)CHANGELOG\.md$
+        args: ["--config", ".markdownlint.jsonc"]
+
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      # The plain id builds from source rather than pulling a Docker image or
+      # expecting a preinstalled binary; the CI job installs only Python.
+      # Go pinned to the version betterleaks already downloads, so the two
+      # hooks share one cached toolchain.
+      - id: actionlint
+        language_version: "1.27.0"
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.7
+    hooks:
+      # --fix writes the fixes and still fails the commit, so stage them and
+      # commit again.
+      - id: ruff-check
+        args: [--fix]
+      # types_or narrowed: the upstream hook also claims markdown at this rev, and
+      # Ruff reformats Python blocks inside .md. mdformat owns Markdown here, and
+      # two formatters on one file is the tug of war CHANGELOG.md already shows.
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  - repo: local
+    hooks:
+      # Pyrefly ships no .pre-commit-hooks.yaml, so this is a local hook. It runs
+      # through uv so the checker sees the project's resolved dependencies.
+      # --locked because a bare `uv run` rewrites uv.lock in place when it is
+      # stale, leaving a tracked file modified as a side effect of committing.
+      # src scopes the check past scripts/ and tests/ -- see pyproject.toml.
+      - id: pyrefly
+        name: pyrefly
+        entry: uv run --locked pyrefly check src
+        language: system
+        types: [python]
+        pass_filenames: false  # the checker needs the project, not the staged files
+
+  - repo: https://github.com/commitizen-tools/commitizen
+    rev: v4.18.0
+    hooks:
+      # -l measures the whole first line, type and scope included, and ignores
+      # the body, which is exactly the section 2.1 rule. Overriding args
+      # replaces the hook's shipped defaults, so --allow-abort is repeated here,
+      # and --commit-msg-file stays last because pre-commit appends the message
+      # filename after the configured args.
+      - id: commitizen
+        stages: [commit-msg]
+        args: [--allow-abort, --message-length-limit, "72", --commit-msg-file]
+
+  - repo: https://github.com/betterleaks/betterleaks
+    rev: v1.8.1
+    hooks:
+      # Reports without writing, so nothing is left modified and unstaged.
+      # .betterleaks.toml holds what the repository treats as benign.
+      # language_version so every machine builds the same scanner.
+      - id: betterleaks
+        language_version: "1.27.0"
+
+  - repo: local
+    hooks:
+      # The --apply path writes real repository settings, so a fake gh is the
+      # only place it gets exercised. Runs on any scripts/ change, not just the
+      # test file, since the script is what the assertions are about.
+      - id: bootstrap-repo-tests
+        name: bootstrap_repo tests
+        entry: python3 -m unittest discover -s scripts -t scripts
+        language: system
+        pass_filenames: false
+        files: ^scripts/.*\.py$
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: v0.11.0.1-1
+    hooks:
+      # shellcheck-py ships the binary as a wheel, so this needs no system
+      # shellcheck -- the CI job installs only Python.
+      - id: shellcheck

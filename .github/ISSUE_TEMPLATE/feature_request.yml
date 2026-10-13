@@ -1,0 +1,17 @@
+name: Feature request
+description: Something this repo should do that it does not do yet
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: The problem rather than the solution — why the current behaviour is not enough.
+    validations:
+      required: true
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Approach
+      description: If you already have one in mind. A sentence is enough; the rest is the discussion.

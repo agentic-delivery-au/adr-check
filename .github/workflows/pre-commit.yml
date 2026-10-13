@@ -1,0 +1,53 @@
+name: pre-commit
+
+# Runs the same hooks contributors run locally. Without this, the hooks are
+# optional in practice: anyone who has not run `pre-commit install`, or who
+# commits with --no-verify, bypasses every check in the harness.
+
+on:
+  pull_request:
+    # No `types:` defaults to [opened, synchronize, reopened], which excludes
+    # `edited` — fired when a PR's base branch is changed (e.g. retargeting a
+    # stacked branch onto main after its base merges), leaving this check
+    # stale against the old base until something else pushes a new commit.
+    types: [opened, reopened, edited, synchronize]
+  push:
+    branches: [main]
+
+# `main` pushes group by ref rather than PR number, and are never cancelled: a
+# superseded push would leave trunk with no green run against its head commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+      # The pyrefly hook shells out to uv so the checker sees the project's
+      # resolved dependencies, so uv has to be on PATH here too. setup-uv
+      # stopped publishing floating major tags after v7, so a bare v10 404s.
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      # --locked rather than --frozen: --frozen installs from the lock without
+      # checking it against pyproject.toml, so a dependency change that was never
+      # re-locked passes CI green.
+      - run: uv sync --locked
+      # Pinned so a new pre-commit release cannot change a CI result on its own;
+      # bump in step with what contributors install locally.
+      - run: python -m pip install pre-commit==4.6.2
+      # Reuse the built hook environments across runs; keyed on the hook config
+      # so it invalidates when a hook or its version changes.
+      - uses: actions/cache@v6
+        with:
+          path: ~/.cache/pre-commit
+          key: pre-commit-${{ runner.os }}-py3.14-${{ hashFiles('.pre-commit-config.yaml') }}
+      - run: pre-commit run --all-files --show-diff-on-failure

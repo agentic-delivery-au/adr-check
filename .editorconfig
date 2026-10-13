@@ -1,0 +1,19 @@
+# Mirrors what the pre-commit hooks enforce, so an editor writes a conforming
+# file instead of a hook rewriting it after the fact. See https://editorconfig.org.
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.md]
+# trailing-whitespace runs with --markdown-linebreak-ext=md, keeping two-space
+# hard line breaks; trimming here would destroy what that hook protects.
+trim_trailing_whitespace = false
+max_line_length = 100
+
+[*.{yml,yaml}]
+indent_size = 2

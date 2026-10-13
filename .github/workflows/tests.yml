@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  pull_request:
+    # Default types exclude `edited`, so a retargeted PR keeps a stale result.
+    types: [opened, reopened, edited, synchronize]
+  push:
+    branches: [main]
+
+# `main` pushes are never cancelled: a superseded one would leave trunk with no
+# green run against its head commit.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # The job id is the status check context ruleset_payload() requires in
+  # scripts/bootstrap_repo.py; renaming it blocks every pull request.
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      # setup-uv stopped publishing floating major tags after v7, so v10 404s.
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      # --frozen would install from a lockfile that no longer matches pyproject.
+      - run: uv sync --locked
+      - run: uv run --no-sync pytest
+      # The default swallows an upload failure, leaving Codecov reporting a
+      # stale commit.
+      - uses: codecov/codecov-action@v7
+        with:
+          # `files` adds to what the search finds rather than replacing it.
+          files: coverage.xml
+          disable_search: true
+          fail_ci_if_error: true
+          token: ${{ secrets.CODECOV_TOKEN }}

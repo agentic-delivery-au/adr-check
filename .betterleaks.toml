@@ -1,0 +1,24 @@
+[extend]
+useDefault = true
+
+# Build output, if a language template's .gitignore later covers it: never
+# committed, and derived from sources that are scanned anyway.
+[[allowlists]]
+description = "Generated output, per .gitignore — never committed, and derived from sources that are scanned"
+paths = [
+  '''(?:^|/)coverage/''',
+  '''(?:^|/)coverage\.xml$''',
+  '''(?:^|/)\.coverage$''',
+  '''(?:^|/)dist/''',
+  '''(?:^|/)build/''',
+  '''(?:^|/)out/''',
+]
+
+# Parallel checkouts, read as a second copy of the tree: the same findings
+# twice, against whichever branch that worktree is on. Its own commits are
+# still covered, by the staged-diff hook and by pre-commit.yml on its PR.
+[[allowlists]]
+description = "Git worktrees — other checkouts of this repository, scanned on their own branch"
+paths = [
+  '''(?:^|/)\.worktrees/''',
+]
