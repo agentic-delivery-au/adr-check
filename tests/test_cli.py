@@ -23,16 +23,14 @@ def run(capsys: pytest.CaptureFixture[str], *argv: str) -> tuple[int, str]:
     return code, capsys.readouterr().err
 
 
-def test_adr_0001_from_the_playbook_passes(adr_dir: Path, capsys: pytest.CaptureFixture[str]):
+def test_adr_0001_passes(adr_dir: Path, capsys: pytest.CaptureFixture[str]):
     shutil.copy(DATA / "0001-record-architecture-decisions.md", adr_dir)
     (adr_dir / "README.md").write_text("# ADRs\n")
 
     assert run(capsys, "--adr-dir", str(adr_dir)) == (0, "")
 
 
-def test_adr_written_to_the_skill_template_passes(
-    adr_dir: Path, capsys: pytest.CaptureFixture[str]
-):
+def test_adr_written_to_the_template_passes(adr_dir: Path, capsys: pytest.CaptureFixture[str]):
     shutil.copy(DATA / "0002-use-the-template.md", adr_dir)
 
     assert run(capsys, "--adr-dir", str(adr_dir)) == (0, "")
