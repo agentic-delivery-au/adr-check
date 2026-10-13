@@ -7,7 +7,7 @@
         {
           "path": "/uv.lock",
           "type": "toml",
-          "jsonpath": "$.package[?(@.name.value=='hello-world')].version"
+          "jsonpath": "$.package[?(@.name.value=='adr-check')].version"
         }
       ]
     }

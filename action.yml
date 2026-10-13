@@ -1,0 +1,58 @@
+name: ADR check
+description: Check the architecture decision records in a repository against the ADR rules.
+
+# The caller must run actions/checkout with `fetch-depth: 0` first.
+
+inputs:
+  adr-dir:
+    description: Directory that holds the ADRs
+    default: docs/adr
+  base-ref:
+    description: >-
+      Ref to compare the ADRs with. Defaults to the PR's base branch on a pull request. A push never
+      compares, so this input is ignored there.
+    default: ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+  merging-to-main:
+    description: >-
+      "true" when this run is a PR into the default branch or a push to it, so an ADR with
+      `status: proposed` fails. Defaults from the event.
+    default: ${{ (github.event_name == 'pull_request' && github.base_ref == github.event.repository.default_branch) || (github.event_name == 'push' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) }}
+  labels:
+    description: >-
+      The PR's labels as a JSON array. The `adr-correction` label allows a body change. Defaults
+      from the pull request event.
+    default: ${{ toJSON(github.event.pull_request.labels.*.name) }}
+
+runs:
+  using: composite
+  steps:
+    # The runner has already fetched this repo's files into github.action_path, so the package
+    # runs from there, at the same ref as the `uses:` line.
+    - uses: astral-sh/setup-uv@v10.2.0
+    - name: Run adr-check
+      shell: bash
+      env:
+        ACTION_PATH: ${{ github.action_path }}
+        ADR_DIR: ${{ inputs.adr-dir }}
+        BASE_REF: ${{ inputs.base-ref }}
+        EVENT_NAME: ${{ github.event_name }}
+        MERGING_TO_MAIN: ${{ inputs.merging-to-main }}
+        LABELS: ${{ inputs.labels }}
+        UV_PROJECT_ENVIRONMENT: ${{ runner.temp }}/adr-check-venv
+      run: |
+        set -euo pipefail
+        args=(--adr-dir "$ADR_DIR")
+        if [[ "$MERGING_TO_MAIN" == "true" ]]; then
+          args+=(--merging-to-main)
+        fi
+        if [[ "$EVENT_NAME" == "push" ]]; then
+          # The PR run enforced the history rules, and PRs are the only way onto main. A push
+          # has no PR labels, so comparing here would fail every merged adr-correction.
+          echo "::notice::A push runs only the checks on the files."
+        elif [[ -z "$BASE_REF" ]]; then
+          echo "::error::base-ref is empty. Run this action on pull_request or push, or set base-ref."
+          exit 1
+        else
+          args+=(--mode ci --base-ref "$BASE_REF" --labels "$LABELS")
+        fi
+        uv run --project "$ACTION_PATH" --locked --no-dev adr-check "${args[@]}"
