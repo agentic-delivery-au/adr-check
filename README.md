@@ -234,17 +234,19 @@ python3 scripts/bootstrap_repo.py --apply    # change it
 
 Two more rulesets protect release tags (`v*.*.*`). "protect release tags" blocks moving or deleting
 one, with no bypass. "release tags come from the release bot" blocks creating one, except by the
-release App. That does not limit tags to release-please: any workflow that can read
-`RELEASE_BOT_PRIVATE_KEY` can mint the App's token, and a writer can run one by pushing a branch. A
-repository admin can also change or disable either ruleset. Pin the action to a commit SHA if you
-need a guarantee that rests on neither. The script does not manage these rulesets. Floating tags
-such as `v0` stay movable.
+release App. The App's key is a secret of the `release` environment, which deploys only from `main`,
+so only the release-please job on `main` can mint the token here. That holds only while no other
+secret holding the same key reaches a workflow: an organisation secret shared with this or another
+repository would let that workflow mint the token too. A repository admin can also change or disable
+either ruleset. Pin the action to a commit SHA if you need a guarantee that rests on neither. The
+script does not manage these rulesets. Floating tags such as `v0` stay movable.
 
 `release-please.yml` authenticates as a GitHub App, because a pull request opened with
 `GITHUB_TOKEN` triggers no workflows and the required checks would never report on the release PR.
 Create an App with Contents, Issues and Pull requests write permissions, install it on the
 repository, then store its client ID as the variable `RELEASE_BOT_CLIENT_ID` and its private key as
-the secret `RELEASE_BOT_PRIVATE_KEY`. There is deliberately no fallback to `GITHUB_TOKEN`.
+the secret `RELEASE_BOT_PRIVATE_KEY` of a `release` environment whose deployment branches are
+limited to `main`. There is deliberately no fallback to `GITHUB_TOKEN`.
 
 ## Releases
 
