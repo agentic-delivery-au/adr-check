@@ -489,3 +489,24 @@ def test_an_adr_changed_in_a_commit_and_deleted_in_the_working_tree_is_checked_f
 
     assert len(problems) == 1
     assert "the body of an ADR on main never changes" in problems[0]
+
+
+def test_a_modified_adr_that_is_not_utf8_is_reported_with_its_name(repo: Repo):
+    repo.write(OLD, adr(1))
+    (repo.adr_dir / OLD).write_bytes(adr(1).replace("It is done.", "Café").encode("latin-1"))
+    repo.commit()
+
+    problems = repo.check()
+
+    assert problems == [f"docs/adr/{OLD}: file is not valid UTF-8"]
+
+
+def test_a_renumbered_adr_that_is_not_utf8_is_reported_with_its_name(duplicated: Repo):
+    repair(duplicated)
+    text = duplicated.read(name(5, "second")).replace("It is done.", "Café")
+    (duplicated.adr_dir / name(5, "second")).write_bytes(text.encode("latin-1"))
+    duplicated.commit()
+
+    problems = duplicated.check()
+
+    assert f"docs/adr/{name(5, 'second')}: file is not valid UTF-8" in problems

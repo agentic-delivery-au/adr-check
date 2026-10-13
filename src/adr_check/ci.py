@@ -180,7 +180,11 @@ def check_against_base(
             continue
         if (repo / new_path).is_symlink():
             continue  # load_tree reports it, and reading it would follow the link
-        old, new = _show(repo, merge_base, old_path), _read(repo, new_path)
+        try:
+            old, new = _show(repo, merge_base, old_path), _read(repo, new_path)
+        except UnicodeDecodeError:
+            problems.append(f"{new_path}: file is not valid UTF-8")
+            continue
         found = _renumber_problems(old, new, mb_numbers)
         problems.extend(found)
         if not found and old.number is not None and new.number is not None:
@@ -198,7 +202,10 @@ def check_against_base(
                     f"{', '.join(tip_numbers[number])}. Renumber this ADR"
                 )
         elif letter == "M" and not (repo / new_path).is_symlink():
-            problems.extend(_modified_problems(repo, merge_base, new_path, labels, renumbered))
+            try:
+                problems.extend(_modified_problems(repo, merge_base, new_path, labels, renumbered))
+            except UnicodeDecodeError:
+                problems.append(f"{new_path}: file is not valid UTF-8")
         if letter not in "ADRM":
             problems.append(f"{new_path}: unexpected change type {letter!r}")
     return problems
