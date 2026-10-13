@@ -135,20 +135,29 @@ def _validate_meta(raw: dict[str, object]) -> tuple[Meta | None, list[str]]:
     return Meta(status, parsed, supersedes, by), []
 
 
+_FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+
+
 def _headings(body: str) -> list[tuple[int, str]]:
     headings: list[tuple[int, str]] = []
-    fence: str | None = None
+    fence: tuple[str, int] | None = None
     for line in _COMMENT.sub("", body).split("\n"):
-        stripped = line.strip()
-        if stripped.startswith(("```", "~~~")):
-            marker = stripped[:3]
-            fence = None if fence == marker else (fence or marker)
-            continue
+        match = _FENCE.match(line)
+        if match:
+            run, rest = match.groups()
+            if fence is None:
+                # CommonMark: a backtick fence's info string cannot hold a backtick.
+                if run[0] != "`" or "`" not in rest:
+                    fence = (run[0], len(run))
+                continue
+            if run[0] == fence[0] and len(run) >= fence[1] and not rest.strip():
+                fence = None
+                continue
         if fence:
             continue
-        match = re.match(r"^(#{1,6}) +(.*?) *#*$", line)
-        if match:
-            headings.append((len(match.group(1)), match.group(2)))
+        heading = re.match(r"^(#{1,6}) +(.*?) *#*$", line)
+        if heading:
+            headings.append((len(heading.group(1)), heading.group(2)))
     return headings
 
 

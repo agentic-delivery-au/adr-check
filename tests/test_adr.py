@@ -149,6 +149,50 @@ def test_heading_inside_code_fence_does_not_count():
     assert any("missing the `## Decision` section" in p for p in parse(7, text)[1])
 
 
+def decision_problems(opening: str, closing: str) -> list[str]:
+    """Return the problems when `## Decision` follows a fence opened and then `closed`."""
+    text = adr(7).replace("## Decision\n", f"{opening}\nx\n{closing}\n\n## Decision\n")
+    return parse(7, text)[1]
+
+
+@pytest.mark.parametrize(
+    ("opening", "closing"),
+    [
+        ("````", "```"),
+        ("````", "~~~~"),
+        ("~~~~", "~~~"),
+        ("```", "~~~"),
+        ("```", "``` text"),
+        ("````", "````` text"),
+        ("```", "    ```"),
+    ],
+)
+def test_a_fence_is_not_closed_by_a_shorter_other_or_info_line(opening: str, closing: str):
+    problems = decision_problems(opening, closing)
+
+    assert any("missing the `## Decision` section" in p for p in problems)
+
+
+@pytest.mark.parametrize(
+    ("opening", "closing"),
+    [("```", "```"), ("````", "````"), ("````", "``````"), ("~~~", "~~~~"), ("   ```", "   ```")],
+)
+def test_a_fence_is_closed_by_the_same_char_at_least_as_long(opening: str, closing: str):
+    assert decision_problems(opening, closing) == []
+
+
+def test_a_backtick_fence_with_a_backtick_in_its_info_string_does_not_open():
+    text = adr(7).replace("## Decision\n", "```a`b\n\n## Decision\n")
+
+    assert parse(7, text)[1] == []
+
+
+def test_an_unclosed_fence_runs_to_the_end_of_the_document():
+    text = adr(7).replace("## Consequences\n", "```\n## Consequences\n")
+
+    assert any("missing the `## Consequences` section" in p for p in parse(7, text)[1])
+
+
 @pytest.mark.parametrize("section", ["Context", "Considered options", "Decision", "Consequences"])
 def test_missing_section_fails(section: str):
     text = adr(7).replace(f"## {section}", "## Something else")
