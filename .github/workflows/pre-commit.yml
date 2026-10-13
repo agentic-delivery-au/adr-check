@@ -34,7 +34,7 @@ jobs:
       # The pyrefly hook shells out to uv so the checker sees the project's
       # resolved dependencies, so uv has to be on PATH here too. setup-uv
       # stopped publishing floating major tags after v7, so a bare v10 404s.
-      - uses: astral-sh/setup-uv@v10.1.0
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           enable-cache: true
       # --locked rather than --frozen: --frozen installs from the lock without

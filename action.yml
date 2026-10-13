@@ -27,7 +27,7 @@ runs:
   using: composite
   steps:
     # The package runs from github.action_path, at the same ref as the `uses:` line.
-    - uses: astral-sh/setup-uv@v10.2.0
+    - uses: astral-sh/setup-uv@v10.3.0
     - name: Run adr-check
       shell: bash
       env:
