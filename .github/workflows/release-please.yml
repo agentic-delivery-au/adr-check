@@ -14,8 +14,7 @@ permissions: {}
 jobs:
   release-please:
     runs-on: ubuntu-latest
-    # The App key is a secret of this environment, which deploys only from main, so a
-    # workflow on another branch cannot mint the token that may create release tags.
+    # Holds the release App key and deploys only from main: README "Repository settings" has the limits.
     environment: release
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
