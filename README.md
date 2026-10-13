@@ -147,9 +147,10 @@ Pin the action to a release tag, `@vX.Y.Z`. Move it together with the hook's ver
   checks on the files and the `proposed` check.
 
 The action installs the tool from its own checkout (the files the runner fetched for `uses:`), so
-the code that runs is whatever commit the tag points at. A tag is a mutable reference: a PyPI
-version cannot change, but someone with write access to the GitHub repository can move a tag. The
-action uses [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) to provide uv.
+the code that runs is the commit the tag points at. Rulesets in this repository stop anyone moving
+or deleting a release tag (`vX.Y.Z`), and stop anyone but the release App creating one.
+[Repository settings](#repository-settings) gives their limits. The action uses
+[astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) to provide uv.
 
 #### Action inputs
 
@@ -230,6 +231,14 @@ plan first, because it replaces an existing ruleset wholesale.
 python3 scripts/bootstrap_repo.py            # what it would change
 python3 scripts/bootstrap_repo.py --apply    # change it
 ```
+
+Two more rulesets protect release tags (`v*.*.*`). "protect release tags" blocks moving or deleting
+one, with no bypass. "release tags come from the release bot" blocks creating one, except by the
+release App. That does not limit tags to release-please: any workflow that can read
+`RELEASE_BOT_PRIVATE_KEY` can mint the App's token, and a writer can run one by pushing a branch. A
+repository admin can also change or disable either ruleset. Pin the action to a commit SHA if you
+need a guarantee that rests on neither. The script does not manage these rulesets. Floating tags
+such as `v0` stay movable.
 
 `release-please.yml` authenticates as a GitHub App, because a pull request opened with
 `GITHUB_TOKEN` triggers no workflows and the required checks would never report on the release PR.
