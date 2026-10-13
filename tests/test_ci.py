@@ -476,3 +476,16 @@ def test_git_output_is_decoded_as_utf8(repo: Repo, monkeypatch: pytest.MonkeyPat
 
     assert seen
     assert all(kwargs.get("encoding") == "utf-8" for kwargs in seen)
+
+
+def test_an_adr_changed_in_a_commit_and_deleted_in_the_working_tree_is_checked_from_head(
+    repo: Repo,
+):
+    repo.write(OLD, adr(1).replace("The situation.", "Changed."))
+    repo.commit()
+    repo.remove(OLD)
+
+    problems = repo.check()
+
+    assert len(problems) == 1
+    assert "the body of an ADR on main never changes" in problems[0]

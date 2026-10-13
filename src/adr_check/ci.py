@@ -205,8 +205,7 @@ def check_against_base(
 
 
 def _read(repo: Path, path: str) -> AdrFile:
-    adr, _ = parse_text(path, (repo / path).read_text(encoding="utf-8"))
-    return adr
+    return _show(repo, "HEAD", path)
 
 
 def _modified_problems(
