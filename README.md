@@ -88,6 +88,7 @@ repos:
         name: adr-check
         entry: adr-check
         language: python
+        language_version: python3.14
         additional_dependencies: [adr-check==X.Y.Z]
         files: ^docs/adr/
         pass_filenames: false
