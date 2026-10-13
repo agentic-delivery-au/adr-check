@@ -255,12 +255,12 @@ Three more rulesets protect release tags. "protect release tags" blocks moving o
 tag (`v*.*.*`), with no bypass. "release tags come from the release bot" blocks creating one, except
 by the release App. "floating release tags come from the release bot" covers the rest of `v*` (`v0`,
 `v0.1`) and blocks creating, moving or deleting them, except by the release App. The App's key is a
-secret of the `release` environment, which deploys only from `main`, so only the release-please job
-on `main` can mint the token here. That holds only while no other secret holding the same key
-reaches a workflow: an organisation secret shared with this or another repository would let that
-workflow mint the token too. A repository admin can also change or disable any of them. Pin the
-action to a commit SHA if you need a guarantee that rests on neither. The script does not manage
-these rulesets.
+secret of the `release` environment, which deploys only from `main`, so only the `release-please`
+and `floating-tags` jobs on `main` can mint the token here. That holds only while no other secret
+holding the same key reaches a workflow: an organisation secret shared with this or another
+repository would let that workflow mint the token too. A repository admin can also change or disable
+any of them. Pin the action to a commit SHA if you need a guarantee that rests on neither. The
+script does not manage these rulesets.
 
 `release-please.yml` authenticates as a GitHub App, because a pull request opened with
 `GITHUB_TOKEN` triggers no workflows and the required checks would never report on the release PR.
