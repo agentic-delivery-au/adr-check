@@ -193,6 +193,27 @@ def test_an_unclosed_fence_runs_to_the_end_of_the_document():
     assert any("missing the `## Consequences` section" in p for p in parse(7, text)[1])
 
 
+def test_an_unclosed_comment_hides_the_sections_after_it():
+    text = adr(7).replace("## Context\n", "<!--\n## Context\n")
+
+    problems = parse(7, text)[1]
+
+    for section in ("Context", "Considered options", "Decision", "Consequences"):
+        assert any(f"missing the `## {section}` section" in p for p in problems)
+
+
+def test_a_comment_opener_inside_a_fence_is_literal():
+    text = adr(7).replace("## Context\n", "```\n<!--\n```\n## Context\n")
+
+    assert parse(7, text)[1] == []
+
+
+def test_a_comment_closes_on_a_later_line_and_the_sections_after_it_count():
+    text = adr(7).replace("## Context\n", "<!-- guidance\n## Not a section\n-->\n## Context\n")
+
+    assert parse(7, text)[1] == []
+
+
 @pytest.mark.parametrize("section", ["Context", "Considered options", "Decision", "Consequences"])
 def test_missing_section_fails(section: str):
     text = adr(7).replace(f"## {section}", "## Something else")

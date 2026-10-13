@@ -136,12 +136,22 @@ def _validate_meta(raw: dict[str, object]) -> tuple[Meta | None, list[str]]:
 
 
 _FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
+_COMMENT_START = re.compile(r"^ {0,3}<!--")
 
 
 def _headings(body: str) -> list[tuple[int, str]]:
     headings: list[tuple[int, str]] = []
     fence: tuple[str, int] | None = None
-    for line in _COMMENT.sub("", body).split("\n"):
+    in_comment = False
+    for line in body.split("\n"):
+        if in_comment:
+            # CommonMark: an HTML comment block runs to the first line holding `-->`, or to EOF.
+            in_comment = "-->" not in line
+            continue
+        if fence is None and _COMMENT_START.match(line):
+            in_comment = "-->" not in line[line.index("<!--") + 4 :]
+            continue
+        line = _COMMENT.sub("", line)
         match = _FENCE.match(line)
         if match:
             run, rest = match.groups()
