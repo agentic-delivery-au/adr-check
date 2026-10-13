@@ -44,7 +44,9 @@ are a record of what the team knew at the time, so they stay put.
 - **Merged ADRs are immutable.** The body of an ADR on the base branch may not change, and the
   frontmatter may change only from `accepted` to `superseded` with `superseded_by` set. A pull
   request labelled `adr-correction` may fix a typo or a link in the body. The label does not allow a
-  frontmatter change.
+  frontmatter change. The check cannot tell a typo fix from a rewrite, so anyone who can add the
+  label can change a body. Require an approving review from someone other than the author on the
+  base branch, so a person judges that a labelled change is only a correction.
 - **`proposed` ADRs may change.** A `proposed` ADR on the base branch is not settled, so these rules
   do not protect it.
 - **No deletions or renames.** ADRs are never deleted, and never renamed. The one exception is the
