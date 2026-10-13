@@ -130,10 +130,11 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-depth: 0
-      - uses: agentic-delivery-au/adr-check@<sha> # vX.Y.Z
+      - uses: agentic-delivery-au/adr-check@vX.Y.Z
 ```
 
-Pin the action to a full commit SHA, as you would any third-party action. Four details matter:
+Pin the action to a release tag, `@vX.Y.Z`. Move it together with the hook's version (its `rev:`, or
+`adr-check==` in a local hook), so the hook and CI apply the same rules. Four details matter:
 
 - **`fetch-depth: 0`.** A shallow checkout has no base branch to compare with, and the action fails
   with a message that says so.
@@ -146,7 +147,7 @@ Pin the action to a full commit SHA, as you would any third-party action. Four d
   checks on the files and the `proposed` check.
 
 The action installs the tool from its own checkout (the files the runner fetched for `uses:`), so
-the code that runs is the code at the commit you pinned. It uses
+the code that runs is the release you pinned. It uses
 [astral-sh/setup-uv](https://github.com/astral-sh/setup-uv) to provide uv.
 
 #### Action inputs
