@@ -16,10 +16,10 @@ build-backend = "hatchling.build"
 # Pinned exactly so a tool cannot change a CI result on its own. Dependabot
 # raises the upgrade PRs through the "uv" entry in .github/dependabot.yml.
 dev = [
-  "pyrefly==1.3.0",
+  "pyrefly==1.3.2",
   "pytest==9.1.1",
   "pytest-cov==7.1.0",
-  "ruff==0.16.7",
+  "ruff==0.17.0",
 ]
 
 [tool.ruff]
