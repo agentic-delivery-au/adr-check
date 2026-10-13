@@ -14,6 +14,8 @@ permissions: {}
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    # Holds the release App key and deploys only from main: README "Repository settings" has the limits.
+    environment: release
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
       tag_name: ${{ steps.release.outputs.tag_name }}
